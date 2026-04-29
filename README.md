@@ -1,4 +1,5 @@
-# turbopixel
+<a href="https://omega.gg/Sky-runtime"><img src="dist/screens/turbopixelA.png" alt="turbopixel" width="128px"></a>
+---
 
 turbopixel is a [Sky-runtime](https://omega.gg/Sky-runtime) image generator that runs locally using
 state-of-the-art generative models. It aims to provide efficient and accessible image generation
