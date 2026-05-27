@@ -7,4 +7,4 @@ SKY_PATH_REAL_ESRGAN.
 
 ## Tools
 
-- [run.sh](run.sh): Upscale an image.
+- [run.sh](run.sh): Upscale an image
