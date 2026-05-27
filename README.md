@@ -8,3 +8,19 @@ run on modern laptops - with or without a dedicated GPU - delivering high-qualit
 maintaining reasonable generation speeds.
 
 - [Bash scripts](bash/README.md)
+
+## License
+
+Copyright (C) 2025-2026 turbopixel authors | https://omega.gg/turbopixel
+
+Licensed under the PolyForm Strict License 1.0.0 — [LICENSE.md](LICENSE.md).
+
+This is source-available software. You can use it, read the code, and modify it for your own
+purposes. Please don't redistribute it publicly (GitHub, package registries, file-sharing sites)
+or resell it.
+
+For commercial licensing inquiries: contact@omega.gg
+
+### Authors
+
+- Benjamin Arnaud aka [bunjee](https://bunjee.me) | <bunjee@omega.gg>
