@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
 
-OTHER_FILES += README.md
+OTHER_FILES += README.md  \
+               LICENSE.md \
