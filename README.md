@@ -13,7 +13,7 @@ maintaining reasonable generation speeds.
 
 Copyright (C) 2025-2026 turbopixel authors | https://omega.gg/turbopixel
 
-Licensed under the PolyForm Strict License 1.0.0 — [LICENSE.md](LICENSE.md).
+Licensed under the PolyForm Strict License 1.0.0 [LICENSE.md](LICENSE.md).
 
 This is source-available software. You can use it, read the code, and modify it for your own
 purposes. Please don't redistribute it publicly (GitHub, package registries, file-sharing sites)
