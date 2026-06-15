@@ -3,6 +3,7 @@
 ## Generate
 
 - [ml-sharp](ml-sharp/README.md)
+- [diffusion](diffusion/README.md)
 - [z-image](z-image/README.md)
 - [flux2](flux2/README.md)
 - [real-esrgan](real-esrgan/README.md)
