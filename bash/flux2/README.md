@@ -50,12 +50,12 @@ example:
 ```
 Usage: run <prompt> <output image> [width = 512] [height = 512]
            [renderer = cpu] [seed = -1] [inference = 4]
-           [offload = sequential_cpu] [slicing = none]
+           [offload = offloader] [slicing = none]
            [server]
 
 renderer: cpu, cuda, mps
 
-offload: none, model_cpu, sequential_cpu
+offload: none, offloader, model_cpu, sequential_cpu
 
 slicing: none, slice
 
@@ -72,14 +72,14 @@ examples:
 Usage: run-image <prompt> <input images> <output image>
                  [width = 512] [height = 512]
                  [renderer = cpu] [seed = -1] [inference = 4]
-                 [offload = sequential_cpu] [slicing = none]
+                 [offload = offloader] [slicing = none]
                  [server]
 
 input images: separated by a comma, 4 maximum
 
 renderer: cpu, cuda, mps
 
-offload: none, model_cpu, sequential_cpu
+offload: none, offloader, model_cpu, sequential_cpu
 
 slicing: none, slice
 
