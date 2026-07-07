@@ -63,7 +63,7 @@ server: host:port (or port for 127.0.0.1) of a rendering server
 
 examples:
     run "knight in armor" output.png
-    run "knight in armor" output.png 512 512 cuda -1 4 sequential_cpu none 8080
+    run "knight in armor" output.png 512 512 cuda -1 4 offloader none 8080
 ```
 
 ### [run-image.sh](../../../bash/turbopixel/flux2/run-image.sh): Generate an image from a text prompt and reference images
@@ -87,5 +87,5 @@ server: host:port (or port for 127.0.0.1) of a rendering server
 
 examples:
     run "knight in armor" shield.png,helmet.png output.png
-    run "knight in armor" shield.png,helmet.png output.png 512 512 cuda -1 4 sequential_cpu none 8080
+    run "knight in armor" shield.png,helmet.png output.png 512 512 cuda -1 4 offloader none 8080
 ```
