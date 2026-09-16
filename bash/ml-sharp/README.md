@@ -7,7 +7,7 @@ SKY_PATH_ML_SHARP.
 
 ## Tools
 
-### [build.sh](../../../bash/turbopixel/ml-sharp/build.sh): Install ml-sharp in the SKY_PATH_BIN folder
+### [build.sh](../../../bash/turbopixel/ml-sharp/build.sh) - Install ml-sharp in the SKY_PATH_BIN folder
 
 ```
 Usage: build <cpu | cuda>
@@ -18,7 +18,7 @@ example:
     build cuda
 ```
 
-### [run.sh](../../../bash/turbopixel/ml-sharp/run.sh): Generate a gaussian splat from an image
+### [run.sh](../../../bash/turbopixel/ml-sharp/run.sh) - Generate a gaussian splat from an image
 
 ```
 Usage: run <source image> <output (ply)>
