@@ -7,6 +7,7 @@ while operating entirely offline with no censorship, tracking or data collection
 run on modern laptops - with or without a dedicated GPU - delivering high-quality results while
 maintaining reasonable generation speeds.
 
+- [User manual](MANUAL.md)
 - [Bash scripts](bash/README.md)
 
 ## License
