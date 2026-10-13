@@ -17,28 +17,34 @@ example:
 ```
 Usage: install <engine> <renderer> [dtype = default] [inference = -1]
                [offload = offloader] [slicing = none]
-               [ComfyUI folder]
+               [ComfyUI folder] [token]
 
 engine: flux2-4b
+        flux2-9b                 (gated: needs a token)
         z-image-turbo
         comfy-flux2-4b
+        comfy-flux2-9b           (gated: needs a token)
+        comfy-flux2-9b-distilled (gated: needs a token)
         comfy-z-image-turbo
         comfy-krea2-turbo
         comfy-krea2-turbo-realism
+        comfy-qwen-image-2-1
+        comfy-qwen-image-2-1-turbo
         comfy-qwen-image-edit-2511
         comfy-qwen-image-edit-2511-lightning
         qwen-image-edit-2511
         qwen-image-edit-2511-lightning
         qwen-image-edit-2511-lightning-angles
-        mask                 (no download -- registers a compute engine)
-        mask-apply           (no download)
-        mask-birefnet        (BiRefNet matte model)
-        mask-lucida          (Lucida matte model)
-        mask-inspyrenet      (InSPyReNet matte model)
+        mask                     (no download, registers a compute engine)
+        mask-apply               (no download)
+        mask-birefnet            (BiRefNet matte model)
+        mask-lucida              (Lucida matte model)
+        mask-inspyrenet          (InSPyReNet matte model)
 
 renderer: cpu, cuda, mps
 
 dtype: default, bfloat16, float16, float32
+       (default copies the model as published, no cast)
        (bfloat16 is recommended for CUDA, float16 for Apple MPS)
        (the weights are cast on a fresh install alone, remove first to recast)
 
@@ -48,6 +54,11 @@ slicing: none, slice
 
 ComfyUI folder: reuse an existing ComfyUI install's model files (comfy-* engines).
                 Missing components are fetched into ComfyUI's own models hierarchy.
+                Pass none to skip it and still give a token.
+
+token: optional Hugging Face access token, for a gated model (flux2-9b and the comfy-flux2-9b
+       engines: FLUX Non-Commercial License, accept it on huggingface.co first). Used for this
+       download only, never recorded. An HF_TOKEN environment variable works too.
 
 NOTE: The renderer and the options after it are recorded with the install, so a host
       reads them back with 'check-model SETTINGS:<engine>'. Installing again over an
@@ -57,6 +68,7 @@ examples:
     install flux2-4b cuda
     install comfy-z-image-turbo cuda bfloat16 -1 offloader none
     install comfy-z-image-turbo cuda default -1 offloader none C:/dev/ComfyUI_portable
+    install comfy-flux2-9b-distilled cuda default -1 offloader none none hf_xxxxxxxx
 ```
 
 ### [remove.sh](../../../bash/turbopixel/turbo/remove.sh) - Remove an installed engine (reference-counted)
@@ -91,7 +103,8 @@ engine: an installed id, reports whether it is installed
 MODES: list the installed engine id(s) supporting ANY of the listed modes
        (text-to-image, image-to-image)
 
-ENGINES: every engine supporting the mode, with 'installed' or 'absent'
+ENGINES: every engine supporting the mode, with 'installed' or 'absent', and 'gated'
+         when its download needs a Hugging Face token
          (text-to-image, image-to-image, image-to-mask)
 
 SETTINGS: the run settings an engine was installed with, one 'key: value' per line
@@ -132,11 +145,16 @@ Usage: text-to-image <engine> <renderer> <prompt> <output image>
                      [server]
 
 engine: flux2-4b
+        flux2-9b
         z-image-turbo
         comfy-flux2-4b
+        comfy-flux2-9b
+        comfy-flux2-9b-distilled
         comfy-z-image-turbo
         comfy-krea2-turbo
         comfy-krea2-turbo-realism
+        comfy-qwen-image-2-1
+        comfy-qwen-image-2-1-turbo
 
 renderer: cpu, cuda, mps
 
@@ -164,7 +182,12 @@ Usage: image-to-image <engine> <renderer> <prompt> <input images> <output image>
                       [server]
 
 engine: flux2-4b
+        flux2-9b
         comfy-flux2-4b
+        comfy-flux2-9b
+        comfy-flux2-9b-distilled
+        comfy-qwen-image-2-1
+        comfy-qwen-image-2-1-turbo
         comfy-qwen-image-edit-2511
         comfy-qwen-image-edit-2511-lightning
         qwen-image-edit-2511
@@ -206,33 +229,46 @@ input images: separated by a comma, the input first. mask: input,reference. matt
               input, or input,plate (a plate keeps the cast shadow).
 
 options: key=value,... -- cutoff=N (0-255, higher = fewer pixels/shadow); mask also takes
-         mode=default|region (default = diff mask, region = grown boxes)
+         mode=default|region (default = diff mask, region = grown boxes), glow=N (pixels,
+         mode=default only: the mask reaches that far past the change, faded, which covers the
+         outline a removal leaves behind) and fade=<left>:<top>:<right>:<bottom> (pixels,
+         either mode: softens the mask on the borders the caller cut, for an input that is a
+         crop of a bigger picture. A side given 0 keeps its hard edge)
 
 server: host:port (or port for 127.0.0.1) of a rendering server
 
 examples:
     image-to-mask mask          cpu  edited.png,original.png mask.png cutoff=40
     image-to-mask mask          cpu  edited.png,original.png mask.png mode=region
+    image-to-mask mask          cpu  edited.png,original.png mask.png glow=16
+    image-to-mask mask          cpu  crop.png,crop_plate.png mask.png mode=region,fade=0:0:24:0
     image-to-mask mask-birefnet cuda photo.png matte.png
     image-to-mask mask-birefnet cuda photo.png,plate.png matte.png cutoff=40
 ```
 
-### [image-apply-mask.sh](../../../bash/turbopixel/turbo/image-apply-mask.sh) - Apply a mask (composite or putalpha)
+### [image-apply-mask.sh](../../../bash/turbopixel/turbo/image-apply-mask.sh) - Apply a mask (composite or putalpha), or trim
 
 ```
-Usage: image-apply-mask <mode> <input images> <output image> [server]
+Usage: image-apply-mask <mode> <input images> <output image> [options] [server]
 
 Apply a precomputed mask (from image-to-mask). Torch-free (PIL, no GPU).
 
 mode: composite  paste the input's masked region onto a reference (needs a reference)
       putalpha   write the mask as the input's alpha channel (an RGBA cutout)
+      trim       crop the input to what shows, with a margin of transparency around it
 
 input images: separated by a comma -- input,mask for putalpha; input,mask,reference for
-              composite (the reference is shown where the mask is black).
+              composite (the reference is shown where the mask is black); input alone
+              for trim.
+
+options: key=value,... -- trim takes pad=N, the most transparency it keeps on a side
+         (pixels, 32 by default), and speck=N, the size under which a separate blob is
+         left out as a speck of the mask (pixels, 0 by default: off, all of it stays)
 
 server: host:port (or port for 127.0.0.1) of a rendering server
 
 examples:
     image-apply-mask putalpha  photo.png,matte.png cutout.png
     image-apply-mask composite edited.png,mask.png,original.png output.png
+    image-apply-mask trim      cutout.png trimmed.png pad=32,speck=1024
 ```

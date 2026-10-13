@@ -36,11 +36,13 @@ it for that renderer, and a second line says so.
 
 **2. Install python.** The `"Installation"` section has two blocks. Each shows a coloured dot and a
 state word - `"Checking"` while it looks, then `"Absent"` or `"Valid"` - and one button. Press
-`"Install"` on `"python"` and wait for `"Valid"`.
+`"Install"` on `"python"` and wait for `"Valid"`. While it installs, its line reads
+`"🕓 Install in progress. F1 for details"`.
 
 **3. Install turboCLI.** The second block, `"Image generation engine built for CPU"` (or for
 whichever renderer you applied). Its button stays grey until python is valid, and while a renderer
-is picked but not applied. Press `"Install"`.
+is picked but not applied. Press `"Install"`. Its line then reads
+`"🕓 Install in progress, this might take a long time. F1 for details"`.
 
 **4. Install an engine.** The `"Engines"` section appears once turboCLI is valid. The button at the
 top of the list picks the category - `"Text to Image"`, `"Image to Image"` or `"Image to Mask"` -
@@ -107,8 +109,9 @@ Three tool buttons sit under undo and redo, and one is always picked.
   through, and a layer inside a group picks the group.
 - **Selection** (`F`) - dragging draws the selection frame.
 
-Holding `Space` pans with any tool, and gives the tool back when you let go. Holding `Shift` while
-zooming or scaling moves in smaller steps.
+Holding `Space` pans with any tool, and gives the tool back when you let go. Holding `Shift` makes
+the zoom finer, with the wheel as with `+` and `-`, and so is the wheel's scale of a layer. The
+keys scale a layer by one pixel, or sixteen with `Shift`, like the arrows.
 
 Nothing moves or scales when the current layer is hidden, or when the group holding it is.
 
@@ -118,9 +121,12 @@ The frame decides what a generation reads and where its result lands. With a fra
 on that rectangle alone and the new layer is created on it. With no frame, runs are about the whole
 canvas.
 
-Drag with the selection tool to draw one. The sides snap to multiples of sixteen, which is what the
-engines count in, and the frame never leaves the canvas. Clicking a layer row while the tool is
-picked frames that row whole. Clicking the canvas clears the frame.
+Drag with the selection tool to draw one. The sides snap to multiples of thirty-two, a multiple of
+the sixteen the engines count in, and the frame never leaves the canvas. Type another in the
+`"Rounding"` field of the `"Selection"` panel, 1 for none; its reset goes back to 32. Clicking a
+layer row while the tool is picked frames that row whole, unless you drew or changed the frame
+yourself: that one stays. Clicking the canvas clears the frame, except the click that takes you out
+of the prompt.
 
 The frame belongs to the project, so it is still there when you reopen it - and it keeps steering
 every run even when you cannot see it, because it is only drawn while the selection tool is picked.
@@ -135,20 +141,26 @@ The `"Layers"` panel lists the layers, the top row being the layer drawn over th
 holds an eye that shows or hides it, a miniature of the canvas showing where the layer sits in it,
 and its name. Clicking the row selects it, and the `"Properties"` panel follows.
 
-Clicking a miniature opens the file in whatever your system opens images with. Hovering it shows a
-larger preview beside the panel.
+Clicking a miniature opens the file in whatever your system opens images with; on a layer with no
+image yet, it opens `"Select an image"` instead and gives the layer the one you pick. Hovering it
+shows a larger preview beside the panel.
 
 Names are given for you - `Background` for the first layer of a new project, then `Layer 1`,
 `Layer 2`, and `Group 1`, `Group 2` for groups. A number already taken is never reused, and there
 is no rename.
 
 Drag a row up or down to reorder it. A coloured line shows where it will land; when that line is
-indented, the row is going into the group above it.
+indented, the row is going into the group above it. Near the top or the bottom of either list, a
+drag scrolls it, whether it moves a row or brings an image in. Drag a layer out of the side of the
+list and over the `"References"` panel to make it a reference where the line shows: a layer with a
+mask is first saved to the output folder, cut down to what shows with a small transparent margin.
+Its row reads `"Loading..."` until that copy is written, and the popup says where.
 
 Four buttons sit under the list:
 
 - **Clone** - copies the current row right above itself and selects the copy. A group is copied
-  with everything it holds.
+  with everything it holds. The copy shares the mask and the composite turbopixel made for the
+  original, so it shows at once, and a new mask on either one gives it files of its own.
 - **Group** - adds an empty group over the current row.
 - **Add** - adds an empty layer over the current row, inside the group that row lives in.
 - **Remove** - deletes the current row, and a group takes its layers with it. It refuses to empty
@@ -202,14 +214,18 @@ already has.
 **`"Mask"`** - the mask of the current layer and what it produces.
 
 - `"Mask"` - the mask file, with a thumbnail, a path and a folder button. `"Applying mask..."`
-  shows beside the title while the layer is being rebuilt.
+  shows beside the title while the layer is being rebuilt. `"⚠️ Mask file is not available"`
+  appears under it when the file has moved or been deleted, as after undoing `"Clear mask"`.
 - `"Composite"` - the layer seen through its mask. This is what the canvas draws. The field is read
   only, since the composite is built rather than chosen, and the eye button beside it hides the
   composite so the layer draws its original image again, keeping both files.
-- `"Clear mask"` - drops the mask and the composite in one step.
+- `"Clear mask"` - drops the mask and the composite in one step, and deletes the files turbopixel
+  made for them, unless another layer still uses them. A mask you picked from elsewhere stays on
+  disk. Undo cannot bring them back.
 
 Changing the mask - by a generation, the folder button or a typed path - rebuilds the composite by
-itself.
+itself. A new mask replaces the one turbopixel made for that layer before, which undo cannot bring
+back; a mask you picked from a folder of your own is never touched.
 
 ## References
 
@@ -222,24 +238,30 @@ it stands - up to and including the row the result will land on, so the answer d
 on top of itself.
 
 Every other row is a file. Each has a check that says whether it goes into the generation, a
-thumbnail and the file's name. The `"+"` button adds an image, unchecked. The trash removes the
-current one. Dragging reorders them, and the order matters: the engine is given them top to bottom.
-The reset button beside `"+"` unchecks every image at once, leaving `"Canvas"` as it is.
+thumbnail and the file's name. The `"+"` button adds an image right under `"Canvas"`, unchecked, as
+the current row. The trash removes the current one. Dragging reorders them, and the order matters:
+the engine is given them top to bottom. Each image is sent whole, in its own shape, never cut to
+the canvas's. Drag one out of the side of the list and over the `"Layers"` panel to make it a layer
+where the line shows. While a row travels between the two lists, its picture follows the pointer.
+The reset button beside `"+"` unchecks every image at once and checks `"Canvas"`.
 
 The panel lets you add as many as you like, and a generation takes four images at most - the
-canvas counted among them - so keep the checks down to four.
+canvas counted among them - so keep the checks down to four. The round label at the bottom left
+counts the checked rows, `"Canvas"` included, and hides when none is checked.
 
 ## Modes
 
 The button at the top of the generate block opens the mode menu, and the mode says what the next
-generation does.
+generation does. Each mode has a color, on its button, in the menu and behind the progress of a
+run: green for `"Text to Image"`, blue for `"Image to Image"`, purple for `"Image to Mask"` and
+orange for `"Render"`. The categories of the setup screen take the same ones.
 
 | Mode | Key | Needs | Produces |
 | --- | --- | --- | --- |
-| `"Text to Image"` | `T` | An engine and a prompt | A new layer with the image |
-| `"Image to Image"` | `I` | An engine, a prompt, a reference | A new layer with the image |
-| `"Image to Mask"` | `M` | An engine and a layer with an image | A mask for that layer |
-| `"Render"` | `R` | Nothing | A PNG of the canvas, in the output folder |
+| `"Text to Image"` | `Ctrl+T` | An engine and a prompt | A new layer with the image |
+| `"Image to Image"` | `Ctrl+I` | An engine, a prompt, a reference | A new layer with the image |
+| `"Image to Mask"` | `Ctrl+M` | An engine and a layer with an image | A mask for that layer |
+| `"Render"` | `Ctrl+R` | Nothing | A PNG of the canvas, in the output folder |
 
 **`"Text to Image"`** writes the prompt into a picture. The new layer is created over the current
 row, on the selection frame, or on the whole canvas when there is no frame.
@@ -251,15 +273,23 @@ checked, `"Generate pixels"` stays grey.
 **`"Image to Mask"`** cuts the current layer out of its background. It takes no prompt - the
 layer's own image is the input - and it produces a mask, which is then applied to give the layer
 its composite. A frame limits the work to the framed part, and everything outside it becomes
-transparent.
+transparent. The mask fades out at the frame rather than stopping dead on it, in either mode,
+so the result blends into the layers underneath - except where the frame sits on the edge of the
+picture, which keeps its own border.
 
 **`"Render"`** needs no engine and no prompt: it writes the canvas exactly as you see it, minus the
-hidden layers, to a PNG in the output folder and says `"Render saved in: "` with the path.
-`Ctrl+R` does it from any mode, even while a generation runs.
+hidden layers, to a PNG in the output folder. The progress line reads `"Render"` while the file is
+written, and `"Render saved in: "` with the path follows once it is. Its stop button ends it at
+once, and the file is deleted as soon as it is written, nothing added. On its `"Layers"` tab it
+stops at the current layer, and it can add the render to the layers or the references. `F12` does
+it from any mode, and renders the whole canvas from the other modes. Like a generation, a render
+runs one at a time: `"Generate"` is greyed out and `F12` does nothing until the run before it is
+done.
 
-Each mode remembers its own engine, so switching between them is instant. Landing on an engine
-brings its own `"Renderer"` and `"Inference"` into the `"Advanced"` page, since those are what it
-was installed with. Your `"Seed"` is never touched.
+Each mode remembers its own engine, so switching between them is instant. An engine that does
+both modes stays selected: editing with `comfy-flux2-4b`, `"Image to Image"` opens on it too.
+Landing on an engine brings its own `"Renderer"` and `"Inference"` into the `"Advanced"` page,
+since those are what it was installed with. Your `"Seed"` is never touched.
 
 The engine button under the mode button reads `"Checking engines"` while the list is being fetched
 and `"No engine available"` when nothing is installed for that mode. It is disabled in both cases.
@@ -271,20 +301,27 @@ second is `"Advanced"`.
 
 The mode page holds the size of what will be generated: a width and a height with a link button,
 then a slider that multiplies the canvas size between a quarter and four times, with the multiplier
-written beside it and a reset. Sizes land on multiples of sixteen; a size you type is taken as it
-is. Under it, `"Seed"` reads `"Default"` until you give it a number, and its reset gives the
-default back - the same seed and the same prompt generate the same image again.
+written beside it and a reset. Sizes land on multiples of sixteen, or of the frame's rounding while
+one is up; a size you type is taken as it is. Under it, `"Seed"` reads `"Default"` until you give
+it a number, and its reset gives the default back - the same seed and the same prompt generate the
+same image again.
 
 Each mode adds its own:
 
 - `"Text to Image"` and `"Image to Image"` show `"Generate on"` with the name of the layer the
   result will land over. Hovering it shows the canvas the way the run will see it.
-- `"Image to Image"` says what it will send, for instance `"Canvas and 1 reference selected"` or
+- `"Image to Image"` says what it will send, for instance `"Canvas and 1 reference"` or
   `"No reference selected"`.
 - `"Image to Mask"` shows `"Apply to"` with the layer being cut out, a `"Cutoff"` slider between 0
   and 255 - the higher it is, the fewer pixels the mask keeps - and, on the `mask` engine only,
-  `"Default"` and `"Region"` buttons.
-- `"Render"` has a single tab, `"Render image"`, holding the size alone.
+  `"Default"` and `"Region"` buttons. Under `"Default"` there is a `"Glow"` slider between 0 and
+  128, none of it to begin with: it grows the mask by that many pixels, which covers the outline an
+  object leaves behind when you take it out of a picture.
+- `"Render"` has two tabs. `"Canvas"` shows `"Render Canvas"` and renders the whole picture,
+  `"Layers"` shows `"Render from"` with the current layer and renders that layer and everything
+  under it. Hovering it shows what the render will hold. Under the size, `"Add to Layers"` puts
+  the render over the current layer as a new one, and `"Add to References"` adds it under
+  `"Canvas"` in the references, like the `+` button. Both are unchecked again after each render.
 
 The `"Advanced"` page holds `"Renderer"` - `"CPU"`, `"CUDA"` or `"MPS"` - and `"Inference"`, the
 number of steps a generation takes. Both show `"Default"` until you change them, and both have a
@@ -322,7 +359,9 @@ running, and nothing at all in `"Render"` mode.
 | `"⚠️ No generator available. Go to the Configure page"` | Install an engine for this mode. |
 | `"⚠️ The current layer has no image"` | Select a layer that holds an image. |
 | `"⚠️ The selection is outside the current layer"` | Move the frame over the layer, or clear it. |
-| Anything else ending in `"Configure page"` | Install python or turboCLI, see `First run`. |
+| `"⚠️ Python is not installed. Go to the Configure page"` | Install python, see `First run`. |
+| `"⚠️ turboCLI is not installed. Go to the Configure page"` | Install turboCLI, see `First run`. |
+| `"⚠️ turboCLI is not up to date. Go to the Configure page"` | Install turboCLI again, over it. |
 
 ## Projects and files
 
@@ -334,6 +373,9 @@ A project is a `.tpx` file. The button under the navigation shows the one you ar
 - `"Load"` - opens a `.tpx` from disk.
 - `"Save as"` - gives the project a name and a place of your own choosing.
 
+Dropping a `.tpx` on the window opens it, the way `"Load"` does. The project you were in is left
+as it was, saved under its own name.
+
 There is no Save button: every edit is written to the current project as you work, and the app
 reopens the last one you were in when it starts. Undo goes back fifty steps, with the buttons
 beside the project one or with `Ctrl+Z` and `Ctrl+Y`.
@@ -342,9 +384,10 @@ A project points at your images by their path rather than holding a copy, so mov
 breaks the layer that uses it - the layer then shows `"⚠️ Image file is not available"`.
 
 Because they are ordinary files, you can edit them elsewhere: change a layer's image, a mask or a
-reference in another program, save it, and turbopixel redraws by itself. Generated images, masks
-and renders are written to turbopixel's own folders; the folder button opens the one holding the
-images.
+reference in another program, save it, and turbopixel redraws by itself. The same goes for the
+`.tpx` itself: changed elsewhere, the project opens again with what it now says. Generated images,
+masks and renders are written to turbopixel's own folders; the folder button opens the one holding
+the images.
 
 ## The Configure screen
 
@@ -376,6 +419,9 @@ the engine you picked:
   an existing ComfyUI install to reuse the model files already there instead of downloading them
   again. Left empty, turbopixel uses its own folder. A folder that does not exist keeps
   `"Install"` and `"Apply"` grey.
+- `"Hugging Face read token (required)"`, on gated engines (the FLUX.2 klein 9B ones) until they
+  are installed. Accept the model's license on huggingface.co, then paste a read token from that
+  account: `"Install"` stays grey without one. It serves that download alone and is never saved.
 - In the corner, `"Install"` when the engine is absent, `"Delete"` when it is installed - which
   asks `"Are you sure ?"` first - and `"Abort"` while an install runs. `"Apply"` beside them stays
   grey until a setting differs from what the engine was installed with; applying records the new
@@ -393,13 +439,14 @@ are locked, and the line above the buttons says it might take a while.
 | `H` | Hand tool |
 | `V` | Move tool |
 | `F` | Selection tool |
-| `T` | `"Text to Image"` mode |
-| `I` | `"Image to Image"` mode |
-| `M` | `"Image to Mask"` mode |
-| `R` | `"Render"` mode |
-| `Ctrl+R` | Renders the canvas, from any mode |
+| `Ctrl+T` | `"Text to Image"` mode |
+| `Ctrl+I` | `"Image to Image"` mode |
+| `Ctrl+M` | `"Image to Mask"` mode |
+| `Ctrl+R` | `"Render"` mode |
+| `F12` | Renders the canvas, from any mode |
+| `Ctrl+G` | Generates, like the `"Generate"` button, even while typing in a field |
 | Arrows | Pans the view, moves the layer or the frame - sixteen pixels with `Shift` |
-| `+` and `-` | Zooms, or scales the layer with the move tool |
+| `+` and `-` | Zooms, finer with `Shift`, or scales the layer with the move tool |
 | `Enter` | Generates, from the prompt - `Shift+Enter` makes a new line |
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y` | Redo, and so does `Ctrl+Shift+Z` |

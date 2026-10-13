@@ -8,6 +8,9 @@ is no brush or pixel editing: a picture is built out of generated layers, their 
 the order they are stacked in. It is optimized to run on modern laptops - with or without a
 dedicated GPU - delivering high-quality results while maintaining reasonable generation speeds.
 
+Generation runs on [turboCLI](https://omega.gg/turboCLI), which turbopixel installs and drives for
+you: it is what downloads the models and runs them.
+
 - [User manual](MANUAL.md)
 - [Bash scripts](bash/README.md)
 
