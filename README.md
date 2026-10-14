@@ -11,7 +11,7 @@ dedicated GPU - delivering high-quality results while maintaining reasonable gen
 Generation runs on [turboCLI](https://omega.gg/turboCLI), which turbopixel installs and drives for
 you: it is what downloads the models and runs them.
 
-- [User manual](MANUAL.md)
+- [Manual](MANUAL.md)
 - [Bash scripts](bash/README.md)
 
 ## License
